@@ -54,7 +54,7 @@ warnings.filterwarnings('ignore')
 get_ipython().run_line_magic("matplotlib", "inline")
 
 
-#%%
+# The user to input the forecast period and dataset file path. It support .csv and .json file formats
 def user_input():
     forecast_period = input("What is the Future Forecast period? ")
     forecast_period = int(forecast_period)
@@ -70,7 +70,7 @@ def user_input():
         dataset = retrieve_data(input_data)
 
     return forecast_period, dataset
-
+## Processes JSON files to extract sales data for multiple SKUs (Stock Keeping Units)
 def retrieve_data(path):
     datasets = dict()
     with open(path) as json_file:
@@ -89,7 +89,7 @@ def retrieve_data(path):
 
     return datasets
 
-
+# Performs the Dickey-Fuller test to check for stationarity in time series data.
 def dickeyfullertest(series):
     dftest = adfuller(series, autolag='AIC')
     dfoutput = pd.Series(dftest[0:4], index= ['Test Statistic', 'p-value', '#Lags Used', 'Number of Observations Used'])
@@ -102,7 +102,7 @@ def dickeyfullertest(series):
 
     else:
         return 1 #stationary
-
+# Calculate thresholds for outlier detection based on standard deviation or median absolute deviation
 def mean_standard_deviation(dataset):
     mu = np.mean(dataset.values)
     sd = np.std(dataset.values)
@@ -192,6 +192,7 @@ def pacf_plot(dataset,freq):
     return q1
 
 #TODO: Send alpha, beta
+# Calculate thresholds for outlier detection based on standard deviation or median absolute deviation.
 def median_absolute_deviation(dataset, median):
     median_list = list()
     dataset.reset_index(drop = True, inplace = True)
@@ -211,7 +212,7 @@ def dateformat(dataset):
     dataset['time']=pd.to_datetime(dataset['time'], format='%m/%d/%y',infer_datetime_format=True)
     dataset.set_index('time', inplace = True)
     return dataset
-
+# Clips outliers to within acceptable bounds.
 def outlier_treatment(dataset):
     median = np.median(dataset)
     if median == 0:
@@ -240,7 +241,7 @@ def get_bucket_size(interval):
         freq=0
     return pt,sindex,freq
 
-def outlier_treatment_tech(dataset,interval,pt): 
+def outlier_treatment_tech(dataset,interval,pt):
     start=0
     end=pt
     sku_data=[0]*len(dataset)
@@ -295,7 +296,7 @@ def Sesonal_detection(sku_data):
         z1=np.unique(n).tolist()
         remove2=b[z1]
     return remove1,remove2,flag1,flag2
-
+# Handles missing dates in the dataset by filling gaps based on the detected interval.
 def impute_missing_dates(dataset):
     interval,start_date,end_date=find_interval(dataset.index)
     drange = pd.date_range(start_date, end_date, freq = interval)
